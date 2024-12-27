@@ -1,0 +1,108 @@
+.user-info-card {
+    display: flex;
+    align-items: center; /* Vertically align image and text */
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 1.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-img-container {
+    flex: 0 0 150px;
+    margin-right: 2rem;
+    display: flex;
+    align-items: center; /* Ensure the image is centered vertically */
+}
+
+.profile-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.profile-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertically align text in the center */
+}
+
+.profile-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left; /* Ensure text is left-aligned */
+}
+
+.profile-info p {
+    margin: 0.25rem 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+.profile-info strong {
+    color: #333;
+}
+
+/* Popup styling */
+.delete-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-popup-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.confirm-delete-btn {
+    background-color: #ff4b5c;
+    margin-top: 1rem;
+}
+
+.confirm-delete-btn:hover {
+    background-color: #e04651;
+}
+
+.cancel-btn {
+    background-color: #ccc;
+    margin-top: 1rem;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb;
+}
+
+.success-message, .error-message {
+    margin-top: 10px;
+    color: green;
+}
+
+.error-message {
+    color: red;
+}

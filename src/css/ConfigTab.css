@@ -1,10 +1,10 @@
-/* Styles for PaymentTab */
-.payment-tab {
+/* Styles for Config */
+.config-tab {
     text-align: center;
     padding: 2rem;
 }
 
-.payment-tab p {
+.config-tab p {
     font-size: 1.2rem;
     color: #333;
 }

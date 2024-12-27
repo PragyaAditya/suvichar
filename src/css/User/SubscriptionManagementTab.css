@@ -1,0 +1,52 @@
+.subscription-management-tab {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+    text-align: center;
+}
+
+.migrate-section, .premium-section {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+}
+
+.button {
+    padding: 0.75rem 1.5rem;
+    background-color: #2575fc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #1e63d4;
+}
+
+.success-message {
+    color: green;
+    font-weight: bold;
+}
+
+.success-message, .error-message {
+    margin-top: 10px;
+    color: green;
+}
+
+.error-message {
+    color: red;
+}

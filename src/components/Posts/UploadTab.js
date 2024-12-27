@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
-import { uploadImage, createPost } from '../services/uploadService'; // Import the new service
-import '../css/UploadTab.css';
+import { uploadImage, createPost } from '../../services/uploadService'; // Import the new service
+import '../../css/Posts/UploadTab.css';
 
 const UploadTab = ({ configData }) => {
     const [selectedParty, setSelectedParty] = useState('');
     const [selectedState, setSelectedState] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
     const [scheduledTime, setScheduledTime] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [compressedFileUrl, setCompressedFileUrl] = useState(null);
@@ -15,7 +16,7 @@ const UploadTab = ({ configData }) => {
     const [uploadSuccess, setUploadSuccess] = useState(false);
 
     // Check if all fields are filled
-    const isFormComplete = selectedParty && selectedState && scheduledTime && imageFile;
+    const isFormComplete =  scheduledTime && imageFile && selectedCategory;
 
     // Handle file selection and compression
     const handleFileChange = async (e) => {
@@ -45,31 +46,78 @@ const UploadTab = ({ configData }) => {
     // Handle the upload and post creation process
     const handleUpload = async () => {
         if (!isFormComplete) return;
-
+    
         setIsUploading(true);
         try {
             // Step 1: Upload the compressed image
             const uploadResponse = await uploadImage(imageFile, 'IMAGE');
             const fileUrl = uploadResponse; // Assuming the response contains the URL
-
+    
             // Step 2: Create the post with the file URL and user inputs
             const postData = {
                 description: '',
-                party: selectedParty,
-                language: selectedState,
+                language: "HINDI",
                 mediaType: 'IMAGE',
-                liveAt: new Date(scheduledTime).getTime(),
-                url: fileUrl,
+                liveAt: new Date(scheduledTime).getTime(), // Ensure this is a timestamp
+                categoryIds: [selectedCategory], // Pass the selected category ID as an array
+                url: fileUrl, // Set the uploaded image URL
+                political: false, // Default to false
             };
-
+    
+            // Check if the selected category is "Political Posters"
+            if (selectedCategory === '9af1a16a-7852-4a64-8d67-fd6e3987c9de') { // Use the correct ID for "Political Posters"
+                postData.party = selectedParty; // Add party only for Political Posters
+                postData.state = selectedState; // Add state only for Political Posters
+                postData.political = true; // Set political to true
+            }
+    
+            console.log('Post Data:', JSON.stringify(postData, null, 2)); // Log post data
+    
+            // Step 3: Send the post request
             await createPost(postData);
             setUploadSuccess(true);
+    
         } catch (error) {
             console.error('Error during upload or post creation:', error);
         } finally {
             setIsUploading(false);
         }
     };
+    
+    // const handleUpload = async () => {
+    //     if (!isFormComplete) return;
+
+    //     setIsUploading(true);
+    //     try {
+    //         // Step 1: Upload the compressed image
+    //         const uploadResponse = await uploadImage(imageFile, 'IMAGE');
+    //         const fileUrl = uploadResponse; // Assuming the response contains the URL
+
+    //         // Step 2: Create the post with the file URL and user inputs
+    //         const postData = {
+    //             description: '',
+    //             party: selectedParty,
+    //             state: selectedState,
+    //             langauge:"HINDI",
+    //             mediaType: 'IMAGE',
+    //             liveAt: new Date(scheduledTime).getTime(),
+    //             categoryIds:
+    //             [selectedCategory],
+    //             political:true,
+    //             url: fileUrl,
+    //         };
+
+    //         await createPost(postData);
+    //         setUploadSuccess(true);
+    //         console.log('Post Data:', JSON.stringify(postData, null, 2));
+
+    //     } catch (error) {
+    //         console.error('Error during upload or post creation:', error);
+         
+    //     } finally {
+    //         setIsUploading(false);
+    //     }
+    // };
 
     return (
         <div className="upload-pane">
@@ -78,6 +126,7 @@ const UploadTab = ({ configData }) => {
                 <label htmlFor="partySelect">Select Party</label>
                 <select
                     id="partySelect"
+                    className="input-field"
                     value={selectedParty}
                     onChange={(e) => setSelectedParty(e.target.value)}
                 >
@@ -95,6 +144,7 @@ const UploadTab = ({ configData }) => {
                 <label htmlFor="stateSelect">Select State</label>
                 <select
                     id="stateSelect"
+                    className="input-field"
                     value={selectedState}
                     onChange={(e) => setSelectedState(e.target.value)}
                 >
@@ -106,6 +156,25 @@ const UploadTab = ({ configData }) => {
                     ))}
                 </select>
             </div>
+
+            
+            <div className="form-group">
+                <label htmlFor="categorySelect">Select Category</label>
+                <select
+                    id="categorySelect"
+                    className="input-field"
+                    value={selectedCategory} // Bind this to selectedCategory state
+                    onChange={(e) => setSelectedCategory(e.target.value)} // Update state with selected category ID
+                >
+                    <option value="">Select a category</option>
+                    {configData?.categories?.map((category) => (
+                        <option key={category.categoryId} value={category.categoryId}> {/* Use category ID as value */}
+                            {category.name} {/* Display category name */}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
 
             {/* Date and time selector */}
             <div className="form-group">
@@ -135,7 +204,7 @@ const UploadTab = ({ configData }) => {
 
             {/* Upload button */}
             <button
-                className="upload-btn"
+                className="button"
                 onClick={handleUpload}
                 disabled={!isFormComplete || isUploading}
             >

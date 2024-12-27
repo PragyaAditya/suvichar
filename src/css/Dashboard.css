@@ -1,0 +1,134 @@
+/* Main container for the dashboard */
+.dashboard-wrapper {
+    padding: 2rem;
+    background-color: #f4f7f9;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 2rem auto;
+    background: white;
+}
+
+/* Header styles */
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-header h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Global tab container */
+.global-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #ddd;
+}
+
+/* Styling for individual global tab items */
+.tab-item {
+    background-color: transparent;
+    border: none;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    color: #666;
+    transition: color 0.3s ease, background-color 0.3s ease;
+    border-bottom: 3px solid transparent;
+    text-transform: uppercase;
+}
+
+.tab-item:hover {
+    color: #2575fc;
+}
+
+/* Active tab styling */
+.active-tab {
+    color: #2575fc;
+    border-bottom: 3px solid #2575fc;
+    font-weight: 600;
+}
+
+/* Signout button */
+.signout-btn {
+    background-color: #ff4b5c;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.signout-btn:hover {
+    background-color: #ff3b4c;
+}
+
+/* Tab content */
+.tab-content {
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Common button styles */
+.button {
+    background-color: #ff4b5c;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    display: block;
+    margin: 1rem auto; /* Horizontally centered */
+}
+
+.button:hover {
+    background-color: #ff3b4c;
+}
+
+.button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Common input field styles */
+.input-field {
+    width: 100%;
+    max-width: 300px; /* Limit the width for better alignment */
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    height: 40px; /* Ensure uniform height */
+    display: block;
+    box-sizing: border-box;
+}
+
+/* Additional margin for input fields */
+.input-field-group {
+    margin-bottom: 1.5rem;
+}
+
+.success-message, .error-message {
+    margin-top: 10px;
+    color: green;
+}
+
+.error-message {
+    color: red;
+}
+
