@@ -86,13 +86,6 @@ const GetSanghPostsTab = ({ configData }) => {
                 {isLoading ? 'Fetching...' : 'Fetch Posts'}
             </button>
 
-            {/* Update post order button */}
-            {posts.length > 0 && (
-                <button className="button" onClick={handleUpdateOrder} disabled={isReordering}>
-                    {isReordering ? 'Updating...' : 'Update Post Order'}
-                </button>
-            )}
-
             {/* Display posts and allow reordering */}
             {posts.length > 0 && (
                 <div className="post-list">
@@ -111,7 +104,12 @@ const GetSanghPostsTab = ({ configData }) => {
                 </div>
             )}
 
-            
+            {/* Update post order button */}
+            {posts.length > 0 && (
+                <button className="button" onClick={handleUpdateOrder} disabled={isReordering}>
+                    {isReordering ? 'Updating...' : 'Update Post Order'}
+                </button>
+            )}
         </div>
     );
 };

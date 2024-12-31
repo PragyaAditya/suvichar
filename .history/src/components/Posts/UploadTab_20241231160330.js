@@ -1,31 +1,32 @@
-import React, { useState } from 'react';
-import Select from 'react-select';
+import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
-import { uploadImage, createPost } from '../../services/uploadService';
+import { uploadImage, createPost } from '../../services/uploadService'; // Import the new service
 import '../../css/Posts/UploadTab.css';
 
 const UploadTab = ({ configData }) => {
     const [selectedParty, setSelectedParty] = useState('');
     const [selectedState, setSelectedState] = useState('');
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [selectedLanguage, setSelectedLanguage] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
     const [scheduledTime, setScheduledTime] = useState('');
     const [imageFile, setImageFile] = useState(null);
+    const [compressedFileUrl, setCompressedFileUrl] = useState(null);
     const [originalSize, setOriginalSize] = useState(null);
     const [compressedSize, setCompressedSize] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
 
-    const isFormComplete = scheduledTime && selectedLanguage && imageFile && selectedCategories.length > 0;
+    // Check if all fields are filled
+    const isFormComplete =  scheduledTime && imageFile && selectedCategory;
 
+    // Handle file selection and compression
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const originalFileSize = (file.size / 1024).toFixed(2);
+            const originalFileSize = (file.size / 1024).toFixed(2); // Size in KB
             setOriginalSize(originalFileSize);
 
             const options = {
-                maxSizeMB: 0.05,
+                maxSizeMB: 0.05, // Aggressive lossy compression
                 useWebp: true,
                 fileType: 'image/webp',
                 alwaysKeepResolution: true,
@@ -33,7 +34,7 @@ const UploadTab = ({ configData }) => {
 
             try {
                 const compressed = await imageCompression(file, options);
-                const compressedFileSize = (compressed.size / 1024).toFixed(2);
+                const compressedFileSize = (compressed.size / 1024).toFixed(2); // Size in KB
                 setCompressedSize(compressedFileSize);
                 setImageFile(compressed);
             } catch (error) {
@@ -42,53 +43,85 @@ const UploadTab = ({ configData }) => {
         }
     };
 
+    // Handle the upload and post creation process
     const handleUpload = async () => {
-        if (!isFormComplete) {
-            alert('Please select both party, state, category, scheduled time and image to upload.');
-            return;
-        }
-
+        if (!isFormComplete) return;
+    
         setIsUploading(true);
         try {
+            // Step 1: Upload the compressed image
             const uploadResponse = await uploadImage(imageFile, 'IMAGE');
-            const fileUrl = uploadResponse;
-
+            const fileUrl = uploadResponse; // Assuming the response contains the URL
+    
+            // Step 2: Create the post with the file URL and user inputs
             const postData = {
                 description: '',
-                sangh: 'Polimart',
-                language: selectedLanguage,
+                language: "HINDI",
                 mediaType: 'IMAGE',
-                liveAt: new Date(scheduledTime).getTime(),
-                categoryIds: selectedCategories.map(cat => cat.value),
-                url: fileUrl,
-                political: false,
+                liveAt: new Date(scheduledTime).getTime(), // Ensure this is a timestamp
+                categoryIds: [selectedCategory], // Pass the selected category ID as an array
+                url: fileUrl, // Set the uploaded image URL
+                political: false, // Default to false
             };
-
-            if (selectedCategories.some(cat => cat.value === '9af1a16a-7852-4a64-8d67-fd6e3987c9de')) {
-                postData.party = selectedParty;
-                postData.state = selectedState;
-                postData.political = true;
+    
+            // Check if the selected category is "Political Posters"
+            if (selectedCategory === '9af1a16a-7852-4a64-8d67-fd6e3987c9de') { // Use the correct ID for "Political Posters"
+                postData.party = selectedParty; // Add party only for Political Posters
+                postData.state = selectedState; // Add state only for Political Posters
+                postData.political = true; // Set political to true
             }
-
-            console.log('Post Data:', JSON.stringify(postData, null, 2));
-
+    
+            console.log('Post Data:', JSON.stringify(postData, null, 2)); // Log post data
+    
+            // Step 3: Send the post request
             await createPost(postData);
             setUploadSuccess(true);
-
+    
         } catch (error) {
             console.error('Error during upload or post creation:', error);
         } finally {
             setIsUploading(false);
         }
     };
+    
+    // const handleUpload = async () => {
+    //     if (!isFormComplete) return;
 
-    const categoryOptions = configData?.categories?.map(category => ({
-        value: category.categoryId,
-        label: category.name,
-    }));
+    //     setIsUploading(true);
+    //     try {
+    //         // Step 1: Upload the compressed image
+    //         const uploadResponse = await uploadImage(imageFile, 'IMAGE');
+    //         const fileUrl = uploadResponse; // Assuming the response contains the URL
+
+    //         // Step 2: Create the post with the file URL and user inputs
+    //         const postData = {
+    //             description: '',
+    //             party: selectedParty,
+    //             state: selectedState,
+    //             langauge:"HINDI",
+    //             mediaType: 'IMAGE',
+    //             liveAt: new Date(scheduledTime).getTime(),
+    //             categoryIds:
+    //             [selectedCategory],
+    //             political:true,
+    //             url: fileUrl,
+    //         };
+
+    //         await createPost(postData);
+    //         setUploadSuccess(true);
+    //         console.log('Post Data:', JSON.stringify(postData, null, 2));
+
+    //     } catch (error) {
+    //         console.error('Error during upload or post creation:', error);
+         
+    //     } finally {
+    //         setIsUploading(false);
+    //     }
+    // };
 
     return (
         <div className="upload-pane">
+            {/* Dropdown for selecting a party */}
             <div className="form-group">
                 <label htmlFor="partySelect">Select Party</label>
                 <select
@@ -106,6 +139,7 @@ const UploadTab = ({ configData }) => {
                 </select>
             </div>
 
+            {/* Dropdown for selecting a state */}
             <div className="form-group">
                 <label htmlFor="stateSelect">Select State</label>
                 <select
@@ -123,36 +157,26 @@ const UploadTab = ({ configData }) => {
                 </select>
             </div>
 
+            
             <div className="form-group">
-                <label htmlFor="languageSelect">Select Language</label>
+                <label htmlFor="categorySelect">Select Category</label>
                 <select
-                    id="languageSelect"
+                    id="categorySelect"
                     className="input-field"
-                    value={selectedLanguage}
-                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    value={selectedCategory} // Bind this to selectedCategory state
+                    onChange={(e) => setSelectedCategory(e.target.value)} // Update state with selected category ID
                 >
-                    <option value="">Select a language</option>
-                    {configData?.languages?.map((language) => (
-                        <option key={language} value={language}>
-                            {language}
+                    <option value="">Select a category</option>
+                    {configData?.categories?.map((category) => (
+                        <option key={category.categoryId} value={category.categoryId}> {/* Use category ID as value */}
+                            {category.name} {/* Display category name */}
                         </option>
                     ))}
                 </select>
             </div>
 
-            <div className="form-group">
-                <label>Select Categories</label>
-                <Select
-                    isMulti
-                    options={categoryOptions}
-                    value={selectedCategories}
-                    onChange={setSelectedCategories}
-                    className="basic-multi-select"
-                    classNamePrefix="select"
-                    placeholder="Select categories"
-                />
-            </div>
 
+            {/* Date and time selector */}
             <div className="form-group">
                 <label htmlFor="scheduleTime">Schedule Post Time</label>
                 <input
@@ -163,6 +187,7 @@ const UploadTab = ({ configData }) => {
                 />
             </div>
 
+            {/* File input for selecting an image */}
             <div className="form-group">
                 <label htmlFor="imageUpload">Select Image</label>
                 <input
@@ -173,9 +198,11 @@ const UploadTab = ({ configData }) => {
                 />
             </div>
 
+            {/* Display file sizes */}
             {originalSize && <p>Original Image Size: {originalSize} KB</p>}
             {compressedSize && <p>Compressed Image Size: {compressedSize} KB</p>}
 
+            {/* Upload button */}
             <button
                 className="button"
                 onClick={handleUpload}
@@ -184,6 +211,7 @@ const UploadTab = ({ configData }) => {
                 {isUploading ? 'Uploading...' : 'Upload'}
             </button>
 
+            {/* Success message */}
             {uploadSuccess && <p>Upload and post creation successful!</p>}
         </div>
     );

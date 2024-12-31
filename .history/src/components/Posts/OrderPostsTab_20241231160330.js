@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { fetchPostsWithLanguage, updatePostOrderNew } from '../../services/postService';
+import { fetchPosts, updatePostOrder } from '../../services/postService';
 import '../../css/Posts/OrderPostsTab.css';
-
 
 const OrderPostsTab = ({ configData }) => {
     const [selectedParty, setSelectedParty] = useState('');
     const [selectedState, setSelectedState] = useState('');
     const [selectedcategory, setSelectedcategory] = useState('');
-    const [selectedLanguage, setSelectedLanguage] = useState('');
     
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -15,14 +13,13 @@ const OrderPostsTab = ({ configData }) => {
     const [postOrder, setPostOrder] = useState([]);
 
     const handleFetchPosts = async () => {
-        if (!selectedcategory && !selectedLanguage) {
-            alert('Please select category and language.');
+        if (!selectedcategory) {
+            alert('Please select both party and state.');
             return;
         }
         setIsLoading(true);
         try {
-            
-            const fetchedPosts = await fetchPostsWithLanguage(selectedcategory,selectedLanguage);
+            const fetchedPosts = await fetchPosts(selectedcategory);
             setPosts(fetchedPosts);
             setPostOrder(fetchedPosts.map((post) => post.postId)); // Store initial post order
         } catch (error) {
@@ -52,7 +49,7 @@ const OrderPostsTab = ({ configData }) => {
     const handleUpdateOrder = async () => {
         setIsReordering(true);
         try {
-            await updatePostOrderNew(postOrder,selectedLanguage,selectedcategory);
+            await updatePostOrder(postOrder);
             alert('Post order updated successfully.');
         } catch (error) {
             console.error('Error updating post order:', error);
@@ -98,24 +95,6 @@ const OrderPostsTab = ({ configData }) => {
                     ))}
                 </select>
             </div>
-            
-            <div className="form-group">
-                <label htmlFor="languageSelect">Select Language</label>
-                <select
-                    id="languageSelect"
-                    className="input-field"
-                    value={selectedLanguage} // Bind this to selectedLanguage state
-                    onChange={(e) => setSelectedLanguage(e.target.value)} // Update state with selected language
-                >
-                    <option value="">Select a language</option>
-                    {configData?.languages?.map((language) => (
-                        <option key={language} value={language}>
-                            {language}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
             <div className="form-group">
                 <label htmlFor="categorySelect">Select Category</label>
                 <select
@@ -138,13 +117,6 @@ const OrderPostsTab = ({ configData }) => {
                 {isLoading ? 'Fetching...' : 'Fetch Posts'}
             </button>
 
-            {/* Update post order button */}
-            {posts.length > 0 && (
-                <button className="button" onClick={handleUpdateOrder} disabled={isReordering}>
-                    {isReordering ? 'Updating...' : 'Update Post Order'}
-                </button>
-            )}
-
             {/* Display posts and allow reordering */}
             {posts.length > 0 && (
                 <div className="post-list">
@@ -163,7 +135,12 @@ const OrderPostsTab = ({ configData }) => {
                 </div>
             )}
 
-            
+            {/* Update post order button */}
+            {posts.length > 0 && (
+                <button className="button" onClick={handleUpdateOrder} disabled={isReordering}>
+                    {isReordering ? 'Updating...' : 'Update Post Order'}
+                </button>
+            )}
         </div>
     );
 };

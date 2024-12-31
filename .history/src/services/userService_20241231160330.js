@@ -24,15 +24,3 @@ export const getUserDetails = async (emailId) => {
         throw error;
     }
 };
-
-export const updateUser = async (partyId,stateId) => {
-    const body = {
-        sangh: 'Polimart',
-        language: 'HINDI',
-        party: partyId,
-        state: stateId,
-    };
-    const response = await apiClient.put('/user/v1/user', body);
-    return response.data;
-};
-

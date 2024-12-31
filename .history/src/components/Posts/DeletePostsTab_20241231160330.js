@@ -1,29 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPosts, deletePost } from '../../services/postService'; // Import service calls
 import '../../css/Posts/DeletePostsTab.css'; // Create a specific CSS for this tab
-import { updateUser } from '../../services/userService';
 
 const DeletePostsTab = ({ configData }) => {
     const [posts, setPosts] = useState([]);
     const [selectedParty, setSelectedParty] = useState(''); // State for selected party
     const [selectedState, setSelectedState] = useState(''); // State for selected state
-    const [selectedcategory, setSelectedcategory] = useState('');
-
     const [isLoading, setIsLoading] = useState(false);
 
     // Fetch posts when the user selects a party and state
     const loadPosts = async () => {
-
-        if (!selectedcategory) {
-            alert('Please select category.');
+        if (!selectedParty || !selectedState) {
+            alert('Please select both party and state.');
             return;
         }
-
         setIsLoading(true);
         try {
-            await updateUser(selectedParty,selectedState);
-            // const fetchedPosts = await fetchPosts(selectedParty, selectedState, true);
-            const fetchedPosts = await fetchPosts(selectedcategory);
+            const fetchedPosts = await fetchPosts(selectedParty, selectedState, true);
             setPosts(fetchedPosts);
         } catch (error) {
             console.error('Error fetching posts:', error);
@@ -47,7 +40,6 @@ const DeletePostsTab = ({ configData }) => {
 
     return (
         <div className="delete-posts-tab">
-
             {/* Dropdown for selecting a party */}
             <div className="form-group">
                 <label htmlFor="partySelect">Select Party</label>
@@ -79,24 +71,6 @@ const DeletePostsTab = ({ configData }) => {
                     {configData?.states?.map((state) => (
                         <option key={state} value={state}>
                             {state}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Dropdown for selecting a cateogry */}
-            <div className="form-group">
-                <label htmlFor="categorySelect">Select Category</label>
-                <select
-                    id="categorySelect"
-                    className="input-field"
-                    value={selectedcategory}
-                    onChange={(e) => setSelectedcategory(e.target.value)}
-                >
-                    <option value="">Select a category</option>
-                    {configData?.categories?.map((category) => (
-                        <option key={category.categoryId} value={category.categoryId}>
-                            {category.name}
                         </option>
                     ))}
                 </select>
