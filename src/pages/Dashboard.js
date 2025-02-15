@@ -8,6 +8,7 @@ import AdminManagementTab from '../components/GlobalTabs/AdminManagementTab'; //
 import '../css/Dashboard.css';
 import SanghPostsTab from '../components/GlobalTabs/SanghPostsTab';
 
+
 const Dashboard = () => {
     const [configData, setConfigData] = useState(null);
     const [activeGlobalTab, setActiveGlobalTab] = useState('posts'); // Default to 'Posts' tab
@@ -41,11 +42,11 @@ const Dashboard = () => {
             case 'posts':
                 return <PostsTab configData={configData} />;
             case 'sanghPosts':
-                return <SanghPostsTab configData={configData} />;    
+                return <SanghPostsTab configData={configData} />;
             case 'user':
                 return <UserTab />;
             case 'config':
-                return <ConfigTab configData={configData} setConfigData = {setConfigData}/>;
+                return <ConfigTab configData={configData} setConfigData={setConfigData} />;
             case 'admin':
                 return userRole === 'SUPER_ADMIN' ? <AdminManagementTab /> : null;
             default:

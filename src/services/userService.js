@@ -25,10 +25,11 @@ export const getUserDetails = async (emailId) => {
     }
 };
 
-export const updateUser = async (partyId,stateId) => {
+export const updateUser = async (partyId,stateId,languageId) => {
     const body = {
         sangh: 'Polimart',
-        language: 'HINDI',
+        // language: 'HINDI',
+        language: languageId,
         party: partyId,
         state: stateId,
     };

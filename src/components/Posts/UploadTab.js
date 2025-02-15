@@ -1,27 +1,60 @@
 import React, { useState } from 'react';
-import Select from 'react-select';
+import { Modal, Button, Select, DatePicker, Upload, message, Tag } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 import imageCompression from 'browser-image-compression';
 import { uploadImage, createPost } from '../../services/uploadService';
-import '../../css/Posts/UploadTab.css';
+import {CloudUploadOutlined } from '@ant-design/icons';
+import useFilteredData from './LanguageStateFilter/useFilteredData';
+import { statesData } from '../../utils/filterData';
 
-const UploadTab = ({ configData }) => {
-    const [selectedParty, setSelectedParty] = useState('');
-    const [selectedState, setSelectedState] = useState('');
+
+const { Option } = Select;
+const { Dragger } = Upload;
+
+const UploadModal = ({ configData,updateDetails }) => {
+    const [visible, setVisible] = useState(false);
+   
     const [selectedCategories, setSelectedCategories] = useState([]);
-    const [selectedLanguage, setSelectedLanguage] = useState('');
-    const [scheduledTime, setScheduledTime] = useState('');
+    
+    const [scheduledTime, setScheduledTime] = useState(null);
     const [imageFile, setImageFile] = useState(null);
+    const [fileName, setFileName] = useState(''); // Store the file name
     const [originalSize, setOriginalSize] = useState(null);
     const [compressedSize, setCompressedSize] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [uploadSuccess, setUploadSuccess] = useState(false);
+    // const [selectedParty, setSelectedParty] = useState(null);
+    // const [selectedState, setSelectedState] = useState(null);
+    // const [selectedLanguage, setSelectedLanguage] = useState(null);
 
-    const isFormComplete = scheduledTime && selectedLanguage && imageFile && selectedCategories.length > 0;
 
-    const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const originalFileSize = (file.size / 1024).toFixed(2);
+    //handles filtering based on language and states..
+    const {
+        filteredStates,
+        filteredParties,
+        selectedLanguage,
+        selectedState,
+        selectedParty,
+        setSelectedState,
+        setSelectedParty,
+        setSelectedLanguage,
+        handleLanguageChange,
+        handleStateChange,
+    } = useFilteredData(statesData, configData);
+
+    const isFormComplete =
+        scheduledTime && selectedLanguage && imageFile && selectedCategories.length > 0;
+
+    const handleFileChange = async ({ file }) => {
+        if (file.status === 'removed') {
+            setImageFile(null);
+            setFileName('');
+            setOriginalSize(null);
+            setCompressedSize(null);
+            return;
+        }
+
+        if (file.originFileObj) {
+            const originalFileSize = (file.originFileObj.size / 1024).toFixed(2);
             setOriginalSize(originalFileSize);
 
             const options = {
@@ -32,19 +65,21 @@ const UploadTab = ({ configData }) => {
             };
 
             try {
-                const compressed = await imageCompression(file, options);
+                const compressed = await imageCompression(file.originFileObj, options);
                 const compressedFileSize = (compressed.size / 1024).toFixed(2);
                 setCompressedSize(compressedFileSize);
                 setImageFile(compressed);
+                setFileName(file.name); // Set file name
             } catch (error) {
                 console.error('Error compressing the image:', error);
+                message.error('Error compressing the image. Please try again.');
             }
         }
     };
 
     const handleUpload = async () => {
         if (!isFormComplete) {
-            alert('Please select both party, state, category, scheduled time and image to upload.');
+            message.warning('Please fill in all required fields before uploading.');
             return;
         }
 
@@ -58,135 +93,164 @@ const UploadTab = ({ configData }) => {
                 sangh: 'Polimart',
                 language: selectedLanguage,
                 mediaType: 'IMAGE',
-                liveAt: new Date(scheduledTime).getTime(),
-                categoryIds: selectedCategories.map(cat => cat.value),
+                liveAt: scheduledTime.unix() * 1000,
+                categoryIds: selectedCategories,
                 url: fileUrl,
                 political: false,
             };
 
-            if (selectedCategories.some(cat => cat.value === '9af1a16a-7852-4a64-8d67-fd6e3987c9de')) {
+            if (selectedCategories.includes('9af1a16a-7852-4a64-8d67-fd6e3987c9de')) {
                 postData.party = selectedParty;
                 postData.state = selectedState;
                 postData.political = true;
             }
 
-            console.log('Post Data:', JSON.stringify(postData, null, 2));
-
             await createPost(postData);
-            setUploadSuccess(true);
+            message.success('Upload and post creation successful!');
 
+
+            updateDetails(selectedParty,selectedLanguage,selectedState,selectedCategories[0])
+
+            // Reset the state to clear the form
+            setSelectedParty(null);
+            setSelectedState(null);
+            setSelectedCategories([]);
+            setSelectedLanguage(null);
+            setScheduledTime(null);
+            setImageFile(null);
+            setFileName('');
+            setOriginalSize(null);
+            setCompressedSize(null);
+
+            setVisible(false);
         } catch (error) {
             console.error('Error during upload or post creation:', error);
+            message.error('Error during upload or post creation. Please try again.');
         } finally {
             setIsUploading(false);
         }
     };
 
-    const categoryOptions = configData?.categories?.map(category => ({
-        value: category.categoryId,
-        label: category.name,
-    }));
-
     return (
-        <div className="upload-pane">
-            <div className="form-group">
-                <label htmlFor="partySelect">Select Party</label>
-                <select
-                    id="partySelect"
-                    className="input-field"
-                    value={selectedParty}
-                    onChange={(e) => setSelectedParty(e.target.value)}
-                >
-                    <option value="">Select a party</option>
-                    {configData?.parties?.map((party) => (
-                        <option key={party} value={party}>
-                            {party}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="stateSelect">Select State</label>
-                <select
-                    id="stateSelect"
-                    className="input-field"
-                    value={selectedState}
-                    onChange={(e) => setSelectedState(e.target.value)}
-                >
-                    <option value="">Select a state</option>
-                    {configData?.states?.map((state) => (
-                        <option key={state} value={state}>
-                            {state}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="languageSelect">Select Language</label>
-                <select
-                    id="languageSelect"
-                    className="input-field"
-                    value={selectedLanguage}
-                    onChange={(e) => setSelectedLanguage(e.target.value)}
-                >
-                    <option value="">Select a language</option>
-                    {configData?.languages?.map((language) => (
-                        <option key={language} value={language}>
-                            {language}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="form-group">
-                <label>Select Categories</label>
-                <Select
-                    isMulti
-                    options={categoryOptions}
-                    value={selectedCategories}
-                    onChange={setSelectedCategories}
-                    className="basic-multi-select"
-                    classNamePrefix="select"
-                    placeholder="Select categories"
-                />
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="scheduleTime">Schedule Post Time</label>
-                <input
-                    type="datetime-local"
-                    id="scheduleTime"
-                    value={scheduledTime}
-                    onChange={(e) => setScheduledTime(e.target.value)}
-                />
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="imageUpload">Select Image</label>
-                <input
-                    type="file"
-                    id="imageUpload"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
-            </div>
-
-            {originalSize && <p>Original Image Size: {originalSize} KB</p>}
-            {compressedSize && <p>Compressed Image Size: {compressedSize} KB</p>}
-
-            <button
-                className="button"
-                onClick={handleUpload}
-                disabled={!isFormComplete || isUploading}
+        <>
+            <Button icon={<CloudUploadOutlined />} type="primary" onClick={() => setVisible(true)}>
+                Upload Post
+            </Button>
+            <Modal
+                title="Upload Post"
+                visible={visible}
+                onOk={handleUpload}
+                onCancel={() => setVisible(false)}
+                confirmLoading={isUploading}
+                okText={isUploading ? 'Uploading...' : 'Upload'}
+                cancelText="Cancel"
+                okButtonProps={{ disabled: !isFormComplete }}
             >
-                {isUploading ? 'Uploading...' : 'Upload'}
-            </button>
 
-            {uploadSuccess && <p>Upload and post creation successful!</p>}
-        </div>
+                <div style={{ marginBottom: '16px' }}>
+                    <label>Select Language</label>
+                    <Select
+                        style={{ width: '100%' }}
+                        placeholder="Select a language"
+                        value={selectedLanguage}
+                        onChange={handleLanguageChange}
+                        allowClear
+                    >
+                        {configData?.languages?.map((language) => (
+                            <Option key={language} value={language}>
+                                {language}
+                            </Option>
+                        ))}
+                    </Select>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                    <label>Select State</label>
+                    <Select
+                        style={{ width: '100%' }}
+                        placeholder="Select a state"
+                        value={selectedState}
+                        onChange={handleStateChange}
+                        allowClear
+                    >
+                        {filteredStates.map((item) => (
+                            <Option key={item.state} value={item.state}>
+                                {item.state}
+                            </Option>
+                        ))}
+                    </Select>
+                </div>
+
+                <div style={{ paddingTop: '10px', marginBottom: '16px' }}>
+                    <label>Select Party</label>
+                    <Select
+                        style={{ width: '100%' }}
+                        placeholder="Select a party"
+                        value={selectedParty}
+                        onChange={setSelectedParty}
+                        allowClear
+                    >
+                        {filteredParties.map((party) => (
+                            <Option key={party} value={party}>
+                                {party}
+                            </Option>
+                        ))}
+                    </Select>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                    <label>Select Categories</label>
+                    <Select
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        placeholder="Select categories"
+                        value={selectedCategories}
+                        onChange={setSelectedCategories}
+                    >
+                        {configData?.categories?.map((category) => (
+                            <Option key={category.categoryId} value={category.categoryId}>
+                                {category.name}
+                            </Option>
+                        ))}
+                    </Select>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                    <label>Schedule Post Time</label>
+                    <DatePicker
+                        showTime
+                        style={{ width: '100%' }}
+                        value={scheduledTime}
+                        onChange={setScheduledTime}
+                        placeholder="Select time"
+                    />
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                    <label>Upload Image</label>
+                    <Dragger
+                        accept="image/*"
+                        customRequest={({ onSuccess }) => setTimeout(() => onSuccess('ok'), 0)}
+                        onChange={handleFileChange}
+                        showUploadList={false}
+                    >
+                        <p className="ant-upload-drag-icon">
+                            <InboxOutlined />
+                        </p>
+                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                    </Dragger>
+                    {fileName && (
+                        <Tag color="blue" style={{ padding:'4px 8px', marginTop: '12px' }}>
+                            {fileName}
+                        </Tag>
+                    )}
+                </div>
+
+                {originalSize && <p>Original Image Size: {originalSize} KB</p>}
+                {compressedSize && <p>Compressed Image Size: {compressedSize} KB</p>}
+            </Modal>
+        </>
     );
 };
 
-export default UploadTab;
+export default UploadModal;

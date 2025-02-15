@@ -14,17 +14,19 @@ export const fetchPostsWithLanguage = async (categoryId,langugeId) => {
     const url  = (`/post/v1/post/category?categoryId=${categoryId}`);
     console.log(url);
     // const response = await apiService.get(`post/v1/post/category?categoryId=9af1a16a-7852-4a64-8d67-fd6e3987c9de`);
-     const response = await apiService.get(`/post/v1/post/category?categoryId=${categoryId}&languageId=${langugeId}&sangh=Polimart`);
+     const response = await apiService.get(`/post/v1/post/category?categoryId=${categoryId}&languageId=${langugeId}&sangh=Polimart&all=true`);
     return response.data.posts; // Assuming the posts are in the "posts" array
 };
-
-export const fetchPostFilter = async (categoryId) => {
-    const url = 'https://backend.polimart.in/polimart/post/v1/post/filter?limit=18';
+    
+export const fetchPostFilter = async (categoryId,stateId,languageId,partyId,sangh) => {
+    const url = 'https://backend.polimart.in/polimart/post/v1/post/filter';
     const body = {
         categoryId: categoryId,
-        language: 'HINDI',
-        sangh: 'Polimart',
-        limit: 18,
+        language: languageId,
+        state: stateId,
+        party: partyId,
+        sangh: sangh,
+        limit: 100,
     };
     const response = await apiService.post(url, body);
     return response.data.posts;
